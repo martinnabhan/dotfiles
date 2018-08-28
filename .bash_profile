@@ -14,6 +14,8 @@ export EDITOR="$VISUAL"
 alias vim=nvim
 alias sudo="sudo -i"
 alias macupdate="sudo sh -c 'softwareupdate -ia && reboot'"
+alias ruit-up="docker-sync start && docker-compose -f docker-compose.sync.yml up -d"
+alias ruit-down="docker-sync stop && docker-compose -f docker-compose.sync.yml stop"
 
 # rust cargo path
 export PATH="$HOME/.cargo/bin:$PATH"
