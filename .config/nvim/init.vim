@@ -1,4 +1,3 @@
-" install plug
 if empty(glob("~/.local/share/nvim/site/autoload/plug.vim"))
   silent !curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs
     \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
@@ -10,14 +9,15 @@ if !empty(glob("~/.fzf/bin/fzf"))
   if empty(glob("~/.fzf/bin/rg"))
     if has('mac')
       silent !curl -fLo /tmp/rg.tar.gz
-        \ https://github.com/BurntSushi/ripgrep/releases/download/0.8.1/ripgrep-0.8.1-x86_64-apple-darwin.tar.gz
+        \ https://github.com/BurntSushi/ripgrep/releases/download/0.9.0/ripgrep-0.9.0-x86_64-apple-darwin.tar.gz
       silent !tar xzvf /tmp/rg.tar.gz --directory /tmp
-      silent !cp /tmp/ripgrep-0.8.1-x86_64-apple-darwin/rg ~/.fzf/bin/rg
+      silent !cp /tmp/ripgrep-0.9.0-x86_64-apple-darwin/rg ~/.fzf/bin/
+      silent !cp /tmp/ripgrep-0.9.0-x86_64-apple-darwin/complete/rg.bash /usr/local/etc/bash_completion.d/
     else
       silent !curl -fLo /tmp/rg.tar.gz
-        \ https://github.com/BurntSushi/ripgrep/releases/download/0.8.1/ripgrep-0.8.1-x86_64-unknown-linux-musl.tar.gz
+        \ https://github.com/BurntSushi/ripgrep/releases/download/0.9.0/ripgrep-0.9.0-x86_64-unknown-linux-musl.tar.gz
       silent !tar xzvf /tmp/rg.tar.gz --directory /tmp
-      silent !cp /tmp/ripgrep-0.8.1-x86_64-unknown-linux-musl/rg ~/.fzf/bin/rg
+      silent !cp /tmp/ripgrep-0.9.0-x86_64-unknown-linux-musl/rg ~/.fzf/bin/rg
   endif
   endif
 endif
@@ -45,22 +45,22 @@ call plug#begin('~/.vim/plugins')
   " utilities
   Plug 'scrooloose/nerdtree'
   Plug 'w0rp/ale'
+  Plug 'bfredl/nvim-miniyank'
+  Plug 'moll/vim-bbye'
 
+  " autocompletion
   if has('mac')
     Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+    Plug 'lvht/phpcd.vim', { 'for': 'php', 'do': 'composer install' }
+    Plug 'HerringtonDarkholme/yats.vim', { 'for': 'typescript' }
+    Plug 'mhartington/nvim-typescript', { 'for': 'typescript', 'build': './install.sh' }
   endif
 
   " syntax highlight
   Plug 'sheerun/vim-polyglot'
-
-  " TypeScript
   Plug 'leafgarland/typescript-vim'
-  Plug 'Quramy/vim-js-pretty-template'
-
-  " Vue
-  Plug 'posva/vim-vue'
-  Plug 'Quramy/tsuquyomi'
-  Plug 'Quramy/tsuquyomi-vue'
+  Plug 'jparise/vim-graphql', { 'for': 'graphql' }
+  Plug 'posva/vim-vue', { 'for': 'vue' }
 call plug#end()
 
 " enable indentation
@@ -101,10 +101,9 @@ set termguicolors
 " colorscheme nova
 colorscheme onedark
 
-
 " lightline
 set showtabline=0
-autocmd BufWipeout,BufWritePost,TextChanged,TextChangedI * call lightline#update()
+autocmd BufWritePost,TextChanged,TextChangedI * call lightline#update()
 
 let g:lightline = {}
 " let g:lightline.colorscheme = 'nova'
@@ -195,16 +194,16 @@ nmap <C-k> :bnext<cr>
 nmap <C-j> :bprevious<cr>
 
 " delete buffer, keep split
-nmap <C-d> :bp\|bd #<CR>
+nmap <C-d> :Bdelete<cr>:call lightline#update()<cr>
 
-" delete buffer and split
-nmap <C-g> :bdelete!<cr>
+" force delete buffer, keep split
+nmap <C-g> :Bdelete!<cr>:call lightline#update()<cr>
 
 " enable esc to exit :terminal mode
 tnoremap <Esc> <C-\><C-n>
 
 " nerdtree settings and file highlight
-nmap <C-n> :NERDTreeToggle<CR>
+nmap <C-n> :NERDTreeToggle<cr>
 let NERDTreeMinimalUI=1
 let NERDTreeDirArrows = 1
 let NERDTreeQuitOnOpen = 1
@@ -231,26 +230,12 @@ call NERDTreeHighlightFile('rb', 'red', 'NONE', '#ec5f67', 'NONE')
 
 " fzf and rg keys
 nmap <C-i> :Files<cr>
-nmap <C-o> :GFiles<cr>
+nmap <C-o> :GitFiles<cr>
 nmap <C-p> :Code<cr>
 
-" customize fzf colors to match color scheme
-let g:fzf_colors =
-\ { 'fg':      ['fg', 'Normal'],
-  \ 'bg':      ['bg', 'Normal'],
-  \ 'hl':      ['fg', 'Comment'],
-  \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
-  \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
-  \ 'hl+':     ['fg', 'Statement'],
-  \ 'info':    ['fg', 'PreProc'],
-  \ 'border':  ['fg', 'Ignore'],
-  \ 'prompt':  ['fg', 'Conditional'],
-  \ 'pointer': ['fg', 'Exception'],
-  \ 'marker':  ['fg', 'Keyword'],
-  \ 'spinner': ['fg', 'Label'],
-  \ 'header':  ['fg', 'Comment'] }
-
-command! -bang -nargs=* Code call fzf#vim#grep('rg --column --line-number --no-heading --fixed-strings --ignore-case --color "always" -g "!*.min.js" -g "!*.lock" -g "!package-lock.json" ' . shellescape(<q-args>), 1, <bang>0)
+command! -bang -nargs=* Files call fzf#run(fzf#vim#with_preview(fzf#wrap({'source': 'rg --files -uu --fixed-strings --ignore-case -g "!*.min.js" -g "!*.lock" -g "!package-lock.json"', 'sink': 'e', 'down': '70%'})))
+command! -bang -nargs=* GitFiles call fzf#run(fzf#vim#with_preview(fzf#wrap({'source': 'rg --files --fixed-strings --ignore-case -g "!*.min.js" -g "!*.lock" -g "!package-lock.json"', 'sink': 'e', 'down': '70%'})))
+command! -bang -nargs=* Code call fzf#vim#grep('rg --column --fixed-strings --no-heading --ignore-case --line-number -g "!*.min.js" -g "!*.lock" -g "!package-lock.json" ' . shellescape(<q-args>), 1, fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'right:50%'))
 
 " open and reload files
 command! Config e $MYVIMRC
@@ -271,16 +256,101 @@ autocmd BufNewFile,BufRead *.vue set filetype=vue
 set clipboard=unnamed
 
 if has('mac')
-  " enable deocomplete autocompletions
+  " deoplete
   let g:deoplete#enable_at_startup = 1
+  let g:deoplete#auto_complete_start_length = 1
+  let g:deoplete#enable_smart_case = 1
+  let g:deoplete#ignore_sources = get(g:, 'deoplete#ignore_sources', {})
+  let g:deoplete#ignore_sources.php = ['omni']
 endif
 
-" bind tab for autocompletions
-inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
-inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
+" hide ugly end of buffer ~
 " nova
 " hi EndOfBuffer guibg=#3c4c55 guifg=#3c4c55
-
+"
 " dark one
 hi EndOfBuffer guibg=#282c34 guifg=#282c34
+
+" miniyank settings
+let g:miniyank_maxitems = 500
+
+if empty(glob("~/.config/nvim/.miniyank.mpack"))
+  silent !touch ~/.config/nvim/.miniyank.mpack
+endif
+
+let g:miniyank_filename = $HOME . "/.config/nvim/.miniyank.mpack"
+
+" miniyank/fzf integration
+function! FZFYankList() abort
+  function! KeyValue(key, val)
+    let line = join(a:val[0], '\n')
+
+    if (a:val[1] ==# 'V')
+      let line = '\n'.line
+    endif
+
+    return a:key.' '.line
+  endfunction
+
+  return map(miniyank#read(), function('KeyValue'))
+endfunction
+
+function! FZFYankHandler(opt, line) abort
+  let key = substitute(a:line, ' .*', '', '')
+
+  if !empty(a:line)
+    let yanks = miniyank#read()[key]
+    call miniyank#drop(yanks, a:opt)
+  endif
+endfunction
+
+command! Yanks call fzf#run(fzf#wrap('YanksAfter', {
+\ 'source':  FZFYankList(),
+\ 'sink':    function('FZFYankHandler', ['p']),
+\ 'options': '--no-sort --prompt="> "',
+\ }))
+
+nmap <C-u> :Yanks<cr>
+
+" ale
+if !empty(glob("./vendor"))
+  let g:ale_php_phpstan_executable = './vendor/bin/phpstan'
+  let g:ale_php_phpmd_executable = './vendor/bin/phpmd'
+  let g:ale_php_cs_fixer_executable = './vendor/bin/php-cs-fixer'
+  let g:ale_php_phpcs_executable = './vendor/bin/phpcs'
+  let g:phpcd_autoload_path = './vendor/autoload_file.php'
+
+else
+  if !empty(glob("./app/vendor"))
+    let g:ale_php_phpstan_executable = './app/vendor/bin/phpstan'
+    let g:ale_php_phpmd_executable = './app/vendor/bin/phpmd'
+    let g:ale_php_cs_fixer_executable = './app/vendor/bin/php-cs-fixer'
+    let g:ale_php_phpcs_executable = './app/vendor/bin/phpcs'
+    let g:phpcd_autoload_path = './app/vendor/autoload_file.php'
+  endif
+endif
+
+let g:ale_php_phpcs_standard = 'PSR2'
+let g:ale_fix_on_save = 1
+let g:ale_lint_delay = 1000
+
+let g:ale_fixers = {
+\   '*': ['remove_trailing_lines', 'trim_whitespace'],
+\   'javascript': [],
+\   'php': ['php_cs_fixer'],
+\}
+
+let g:ale_linters = {
+\  'typescript': ['tsserver'],
+\  'php': ['phpstan'],
+\}
+
+" autocomplete with tab
+inoremap <expr><tab> pumvisible() ? "\<c-n>" : "\<tab>"
+
+" fix syntax highlighting on long files
+autocmd BufEnter * :syntax sync fromstart
+
+" load bash profile in terminal emulator
+let &shell='/bin/bash --login'
