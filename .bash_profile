@@ -19,9 +19,6 @@ HISTFILESIZE=0.1
 alias vim=nvim
 alias sudo="sudo -i"
 alias macupdate="sudo sh -c 'softwareupdate -ia && reboot'"
-alias ruit-up="docker-sync start && docker-compose -f docker-compose.sync.yml up -d"
-alias ruit-down="docker-sync stop && docker-compose -f docker-compose.sync.yml stop"
-alias tainewruit-staging="ssh tainewruit && sudo su && su impact-blue && cd && cd staging/doctoruit"
 
 # rust cargo path
 export PATH="$HOME/.cargo/bin:$PATH"
