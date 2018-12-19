@@ -51,7 +51,10 @@ call plug#begin('~/.vim/plugins')
   " autocompletion
   if has('mac')
     Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+    Plug 'Shougo/neosnippet.vim'
+    Plug 'Shougo/neosnippet-snippets'
     Plug 'lvht/phpcd.vim', { 'for': 'php', 'do': 'composer install' }
+    Plug 'honza/vim-snippets'
     Plug 'HerringtonDarkholme/yats.vim', { 'for': 'typescript' }
     Plug 'mhartington/nvim-typescript', { 'for': 'typescript', 'build': './install.sh' }
   endif
@@ -96,7 +99,7 @@ set showmatch
 set mouse=
 
 " theme
-syntax on 
+syntax on
 set termguicolors
 " colorscheme nova
 colorscheme onedark
@@ -121,7 +124,7 @@ let g:lightline.active = {
 let g:lightline.tabline = {
 \  'left': [
 \    ['buffers']
-\  ], 
+\  ],
 \  'right': [
 \    []
 \  ],
@@ -262,6 +265,15 @@ if has('mac')
   let g:deoplete#enable_smart_case = 1
   let g:deoplete#ignore_sources = get(g:, 'deoplete#ignore_sources', {})
   let g:deoplete#ignore_sources.php = ['omni']
+  let g:neosnippet#enable_snipmate_compatibility = 1
+  let g:neosnippet#snippets_directory='~/.vim/plugins/vim-snippets/snippets'
+
+  " autocomplete with tab
+  "inoremap <expr><tab> pumvisible() ? "\<c-n>" : "\<tab>"
+
+  imap <expr><TAB> pumvisible() ? "\<C-n>" : (neosnippet#expandable_or_jumpable() ? "\<Plug>(neosnippet_expand_or_jump)" : "\<TAB>")
+  imap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<S-TAB>"
+  imap <expr><CR> pumvisible() ? deoplete#mappings#close_popup() : "\<CR>"
 endif
 
 
@@ -316,41 +328,25 @@ nmap <C-u> :Yanks<cr>
 " ale
 if !empty(glob("./vendor"))
   let g:ale_php_phpstan_executable = './vendor/bin/phpstan'
-  let g:ale_php_phpmd_executable = './vendor/bin/phpmd'
-  let g:ale_php_cs_fixer_executable = './vendor/bin/php-cs-fixer'
-  let g:ale_php_phpcs_executable = './vendor/bin/phpcs'
-  let g:phpcd_autoload_path = './vendor/autoload_file.php'
-
-else
-  if !empty(glob("./app/vendor"))
-    let g:ale_php_phpstan_executable = './app/vendor/bin/phpstan'
-    let g:ale_php_phpmd_executable = './app/vendor/bin/phpmd'
-    let g:ale_php_cs_fixer_executable = './app/vendor/bin/php-cs-fixer'
-    let g:ale_php_phpcs_executable = './app/vendor/bin/phpcs'
-    let g:phpcd_autoload_path = './app/vendor/autoload_file.php'
-  endif
+elseif !empty(glob("./app/vendor"))
+  let g:ale_php_phpstan_executable = './app/vendor/bin/phpstan'
 endif
 
-let g:ale_php_phpcs_standard = 'PSR2'
 let g:ale_fix_on_save = 1
 let g:ale_lint_delay = 1000
 
 let g:ale_fixers = {
 \   '*': ['remove_trailing_lines', 'trim_whitespace'],
 \   'javascript': [],
-\   'php': ['php_cs_fixer'],
 \}
 
 let g:ale_linters = {
-\  'typescript': ['tsserver'],
+\  'typescript': ['tsserver', 'tslint'],
 \  'php': ['phpstan'],
 \}
-
-" autocomplete with tab
-inoremap <expr><tab> pumvisible() ? "\<c-n>" : "\<tab>"
 
 " fix syntax highlighting on long files
 autocmd BufEnter * :syntax sync fromstart
 
 " load bash profile in terminal emulator
-let &shell='/bin/bash --login'
+" let &shell='/bin/bash --login'

@@ -2,19 +2,21 @@ env:
   TERM: xterm-256color
 
 window:
-  decorations: false
+  decorations: transparent
 
   dimensions:
     columns: 80
     lines: 24
 
+  dynamic_padding: true
+
   padding:
     x: 30
     y: 30
 
-tabspaces: 4 
-
 draw_bold_text_with_bright_colors: true
+
+tabspaces: 4
 
 font:
   normal:
@@ -32,20 +34,16 @@ font:
   size: 14.0
 
   offset:
-    x: 0.0
-    y: 0.0
+    x: 0
+    y: 0
 
   glyph_offset:
-    x: 0.0
-    y: 0.0
-
-  scale_with_dpi: true
+    x: 0
+    y: 0
 
   use_thin_strokes: false
 
 render_timer: false
-
-custom_cursor_colors: false
 
 # Colors (One Dark)
 colors:
@@ -146,11 +144,11 @@ colors:
 #   primary:
 #     background: '0x3c4c55'
 #     foreground: '0xc5d4dd'
-# 
+#
 #   cursor:
 #     text: '0x3c4c55'
 #     cursor: '0x7fc1ca'
-# 
+#
 #   normal:
 #     black:   '0x3c4c55'
 #     red:     '0xdf8c8c'
@@ -160,7 +158,7 @@ colors:
 #     magenta: '0x9a93e1'
 #     cyan:    '0x7fc1ca'
 #     white:   '0xc5d4dd'
-# 
+#
 #   bright:
 #     black:   '0x899ba6'
 #     red:     '0xf2c38f'
@@ -187,7 +185,7 @@ mouse:
 selection:
   semantic_escape_chars: ",│`|:\"' ()[]{}<>"
 
-hide_cursor_when_typing: false
+mouse.hide_when_typing: true
 
 live_config_reload: true
 
