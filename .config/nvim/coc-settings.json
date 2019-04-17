@@ -1,0 +1,5 @@
+{
+  "coc.preferences.diagnostic.enable": false,
+  "python.linting.enabled": false,
+  "python.jediEnabled": true
+}

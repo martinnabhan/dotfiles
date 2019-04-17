@@ -9,16 +9,31 @@ if !empty(glob("~/.fzf/bin/fzf"))
   if empty(glob("~/.fzf/bin/rg"))
     if has('mac')
       silent !curl -fLo /tmp/rg.tar.gz
-        \ https://github.com/BurntSushi/ripgrep/releases/download/0.9.0/ripgrep-0.9.0-x86_64-apple-darwin.tar.gz
+        \ https://github.com/BurntSushi/ripgrep/releases/download/11.0.0/ripgrep-11.0.0-x86_64-apple-darwin.tar.gz
       silent !tar xzvf /tmp/rg.tar.gz --directory /tmp
-      silent !cp /tmp/ripgrep-0.9.0-x86_64-apple-darwin/rg ~/.fzf/bin/
-      silent !cp /tmp/ripgrep-0.9.0-x86_64-apple-darwin/complete/rg.bash /usr/local/etc/bash_completion.d/
+      silent !cp /tmp/ripgrep-11.0.0-x86_64-apple-darwin/rg ~/.fzf/bin/
+      silent !cp /tmp/ripgrep-11.0.0-x86_64-apple-darwin/complete/rg.bash /usr/local/etc/bash_completion.d/
     else
       silent !curl -fLo /tmp/rg.tar.gz
-        \ https://github.com/BurntSushi/ripgrep/releases/download/0.9.0/ripgrep-0.9.0-x86_64-unknown-linux-musl.tar.gz
+        \ https://github.com/BurntSushi/ripgrep/releases/download/11.0.0/ripgrep-11.0.0-x86_64-unknown-linux-musl.tar.gz
       silent !tar xzvf /tmp/rg.tar.gz --directory /tmp
-      silent !cp /tmp/ripgrep-0.9.0-x86_64-unknown-linux-musl/rg ~/.fzf/bin/rg
+      silent !cp /tmp/ripgrep-11.0.0-x86_64-unknown-linux-musl/rg ~/.fzf/bin/rg
+    endif
   endif
+
+  if empty(glob("~/.fzf/bin/fd"))
+    if has('mac')
+      silent !curl -fLo /tmp/fd.tar.gz
+        \ https://github.com/sharkdp/fd/releases/download/v7.3.0/fd-v7.3.0-x86_64-apple-darwin.tar.gz
+      silent !tar xzvf /tmp/fd.tar.gz --directory /tmp
+      silent !cp /tmp/fd-v7.3.0-x86_64-apple-darwin/fd ~/.fzf/bin/fd
+      silent !cp /tmp/ripgrep-0.9.0-x86_64-apple-darwin/complete/rg.bash /usr/local/etc/bash_completion.d/
+    else
+      silent !curl -fLo /tmp/fd.tar.gz
+        \ https://github.com/sharkdp/fd/releases/download/v7.3.0/fd-v7.3.0-x86_64-unknown-linux-musl.tar.gz
+      silent !tar xzvf /tmp/fd.tar.gz --directory /tmp
+      silent !cp /tmp/fd-v7.3.0-x86_64-unknown-linux-musl/fd ~/.fzf/bin/fd
+    endif
   endif
 endif
 
@@ -29,8 +44,11 @@ call plug#begin('~/.vim/plugins')
   Plug 'junegunn/fzf.vim'
 
   " theme
-  " Plug 'trevordmiller/nova-vim'
   Plug 'joshdick/onedark.vim'
+  " Plug 'trevordmiller/nova-vim'
+  " Plug 'dracula/vim', { 'as': 'dracula' }
+  " Plug 'sonph/onehalf', {'rtp': 'vim/'}
+  " Plug 'chriskempson/base16-vim'
 
   " lightline
   Plug 'itchyny/lightline.vim'
@@ -38,32 +56,27 @@ call plug#begin('~/.vim/plugins')
   Plug 'itchyny/vim-gitbranch'
   Plug 'maximbaz/lightline-ale'
   " Plug 'alnjxn/estilo-nova'
+  " Plug 'daviesjamie/vim-base16-lightline'
 
-  " icons
+  " devicons
   Plug 'ryanoasis/vim-devicons'
 
   " utilities
   Plug 'scrooloose/nerdtree'
+  Plug 'martinn13/nerdtree-enter-new-tab'
   Plug 'w0rp/ale'
   Plug 'bfredl/nvim-miniyank'
   Plug 'moll/vim-bbye'
 
-  " autocompletion
-  if has('mac')
-    Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
-    Plug 'Shougo/neosnippet.vim'
-    Plug 'Shougo/neosnippet-snippets'
-    Plug 'lvht/phpcd.vim', { 'for': 'php', 'do': 'composer install' }
-    Plug 'honza/vim-snippets'
-    Plug 'HerringtonDarkholme/yats.vim', { 'for': 'typescript' }
-    Plug 'mhartington/nvim-typescript', { 'for': 'typescript', 'build': './install.sh' }
-  endif
+  " language servers
+  Plug 'neoclide/coc.nvim', {'do': { -> coc#util#install()}}
+  Plug 'honza/vim-snippets'
+  Plug 'tpope/vim-markdown'
 
-  " syntax highlight
-  Plug 'sheerun/vim-polyglot'
-  Plug 'leafgarland/typescript-vim'
-  Plug 'jparise/vim-graphql', { 'for': 'graphql' }
-  Plug 'posva/vim-vue', { 'for': 'vue' }
+  " syntax highlighting
+  Plug 'herringtondarkholme/yats.vim'
+  Plug 'pangloss/vim-javascript'
+  Plug 'jparise/vim-graphql'
 call plug#end()
 
 " enable indentation
@@ -101,23 +114,38 @@ set mouse=
 " theme
 syntax on
 set termguicolors
-" colorscheme nova
+
+let g:onedark_terminal_italics = 1
+let g:onedark_color_overrides = {
+\ "black": {"gui": "#1e1e1e", "cterm": "235", "cterm16": "0" },
+\}
+
 colorscheme onedark
+
+" colorscheme nova
+" colorscheme dracula
+" colorscheme onehalfdark
+" colorscheme base16-twilight
+" let base16colorspace=256  " Access colors present in 256 colorspace
 
 " lightline
 set showtabline=0
 autocmd BufWritePost,TextChanged,TextChangedI * call lightline#update()
 
 let g:lightline = {}
-" let g:lightline.colorscheme = 'nova'
 let g:lightline.colorscheme = 'onedark'
+
+" let g:lightline.colorscheme = 'base16'
+" let g:lightline.colorscheme = 'nova'
+" let g:lightline.colorscheme = 'Dracula'
+" let g:lightline.colorscheme = 'onehalfdark'
 
 let g:lightline.active = {
 \  'left': [
 \    ['mode', 'paste'], ['buffers']
 \  ],
 \  'right': [
-\    ['filetype', 'fileencoding', 'fileformat', 'percent', 'lineinfo', 'linter_checking', 'linter_errors', 'linter_warnings', 'linter_ok']
+\    ['cocstatus', 'filetype', 'fileencoding', 'fileformat', 'percent', 'lineinfo', 'linter_checking', 'linter_errors', 'linter_warnings', 'linter_ok']
 \  ]
 \}
 
@@ -142,6 +170,7 @@ let g:lightline.component_function = {
 \  'gitbranch': 'gitbranch#name',
 \  'filetype': 'WebDevIconsGetFileTypeSymbol',
 \  'fileformat': 'WebDevIconsGetFileFormatSymbol',
+\  'cocstatus': 'coc#status',
 \}
 
 let g:lightline.component_type = {
@@ -211,7 +240,7 @@ let NERDTreeMinimalUI=1
 let NERDTreeDirArrows = 1
 let NERDTreeQuitOnOpen = 1
 let NERDTreeAutoDeleteBuffer = 1
-let g:WebDevIconsNerdTreeAfterGlyphPadding = ' '
+let g:WebDevIconsNerdTreeAfterGlyphPadding = ''
 
 function! NERDTreeHighlightFile(extension, fg, bg, guifg, guibg)
   exec 'autocmd filetype nerdtree highlight ' . a:extension .' ctermbg='. a:bg .' ctermfg='. a:fg .' guibg='. a:guibg .' guifg='. a:guifg
@@ -230,59 +259,36 @@ call NERDTreeHighlightFile('coffee', 'red', 'NONE', '#f99157', 'NONE')
 call NERDTreeHighlightFile('js', 'red', 'NONE', '#f99157', 'NONE')
 call NERDTreeHighlightFile('php', 'magenta', 'NONE', '#c594c5', 'NONE')
 call NERDTreeHighlightFile('rb', 'red', 'NONE', '#ec5f67', 'NONE')
+call NERDTreeHighlightFile('typescript', 'red', 'NONE', '#a2ca84', 'NONE')
+call NERDTreeHighlightFile('tsx', 'red', 'NONE', '#a2ca84', 'NONE')
+call NERDTreeHighlightFile('ts', 'red', 'NONE', '#f99157', 'NONE')
 
 " fzf and rg keys
 nmap <C-i> :Files<cr>
 nmap <C-o> :GitFiles<cr>
 nmap <C-p> :Code<cr>
 
-command! -bang -nargs=* Files call fzf#run(fzf#vim#with_preview(fzf#wrap({'source': 'rg --files -uu --fixed-strings --ignore-case -g "!*.min.js" -g "!*.lock" -g "!package-lock.json"', 'sink': 'e', 'down': '70%'})))
-command! -bang -nargs=* GitFiles call fzf#run(fzf#vim#with_preview(fzf#wrap({'source': 'rg --files --fixed-strings --ignore-case -g "!*.min.js" -g "!*.lock" -g "!package-lock.json"', 'sink': 'e', 'down': '70%'})))
-command! -bang -nargs=* Code call fzf#vim#grep('rg --column --fixed-strings --no-heading --ignore-case --line-number -g "!*.min.js" -g "!*.lock" -g "!package-lock.json" ' . shellescape(<q-args>), 1, fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'right:50%'))
+command! -bang -nargs=* Files call fzf#run(fzf#vim#with_preview(fzf#wrap({'source': 'fd --type f --hidden --no-ignore', 'sink': 'e', 'down': '70%'})))
+command! -bang -nargs=* GitFiles call fzf#run(fzf#vim#with_preview(fzf#wrap({'source': 'fd --type f', 'sink': 'e', 'down': '70%'})))
+command! -bang -nargs=* Code call fzf#vim#grep('rg --column --fixed-strings --no-heading --ignore-case --line-number -g "!*.min.js" -g "!*.lock" -g "!package-lock.json" -g "!vendor.js" ' . shellescape(<q-args>), 1, fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'right:50%'))
 
 " open and reload files
 command! Config e $MYVIMRC
 command! Reload so $MYVIMRC
-command! Profile e $HOME/.bash_profile
+command! Profile e $HOME/.zshrc
 command! SSH e $HOME/.ssh/config
 
-" add :bash shortcut for :terminal
+" add :Bash shortcut for :terminal
 command! Bash :terminal
 
 " set terminal emulator scrollback to 100,000
 set scrollback=100000
 
-" vim vue settings
-autocmd BufNewFile,BufRead *.vue set filetype=vue
-
 " share vim and system clipboard
 set clipboard=unnamed
 
-if has('mac')
-  " deoplete
-  let g:deoplete#enable_at_startup = 1
-  let g:deoplete#auto_complete_start_length = 1
-  let g:deoplete#enable_smart_case = 1
-  let g:deoplete#ignore_sources = get(g:, 'deoplete#ignore_sources', {})
-  let g:deoplete#ignore_sources.php = ['omni']
-  let g:neosnippet#enable_snipmate_compatibility = 1
-  let g:neosnippet#snippets_directory='~/.vim/plugins/vim-snippets/snippets'
-
-  " autocomplete with tab
-  "inoremap <expr><tab> pumvisible() ? "\<c-n>" : "\<tab>"
-
-  imap <expr><TAB> pumvisible() ? "\<C-n>" : (neosnippet#expandable_or_jumpable() ? "\<Plug>(neosnippet_expand_or_jump)" : "\<TAB>")
-  imap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<S-TAB>"
-  imap <expr><CR> pumvisible() ? deoplete#mappings#close_popup() : "\<CR>"
-endif
-
-
 " hide ugly end of buffer ~
-" nova
-" hi EndOfBuffer guibg=#3c4c55 guifg=#3c4c55
-"
-" dark one
-hi EndOfBuffer guibg=#282c34 guifg=#282c34
+ hi EndOfBuffer guibg=#1e1e1e guifg=#1e1e1e
 
 " miniyank settings
 let g:miniyank_maxitems = 500
@@ -326,27 +332,37 @@ command! Yanks call fzf#run(fzf#wrap('YanksAfter', {
 nmap <C-u> :Yanks<cr>
 
 " ale
-if !empty(glob("./vendor"))
-  let g:ale_php_phpstan_executable = './vendor/bin/phpstan'
-elseif !empty(glob("./app/vendor"))
-  let g:ale_php_phpstan_executable = './app/vendor/bin/phpstan'
-endif
-
-let g:ale_fix_on_save = 1
 let g:ale_lint_delay = 1000
-
-let g:ale_fixers = {
-\   '*': ['remove_trailing_lines', 'trim_whitespace'],
-\   'javascript': [],
-\}
-
-let g:ale_linters = {
-\  'typescript': ['tsserver', 'tslint'],
-\  'php': ['phpstan'],
-\}
 
 " fix syntax highlighting on long files
 autocmd BufEnter * :syntax sync fromstart
 
-" load bash profile in terminal emulator
-" let &shell='/bin/bash --login'
+" use <tab> for completions
+function! s:check_back_space() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~ '\s'
+endfunction
+
+inoremap <silent><expr> <TAB>
+      \ pumvisible() ? "\<C-n>" :
+      \ <SID>check_back_space() ? "\<TAB>" :
+      \ coc#refresh()
+
+" use <Tab> and <S-Tab> to navigate completion list
+inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+
+" use <cr> to confirm completion
+inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+
+" increase cmdheight
+set cmdheight=2
+
+" shorter updatetime for cursor hold
+set updatetime=300
+
+" show type definition on cursor hold
+autocmd CursorHold * silent call CocActionAsync('doHover')
+
+" highlight coc.nvim popups
+let g:markdown_fenced_languages = ['css', 'javascript', 'js=javascript', 'typescript']

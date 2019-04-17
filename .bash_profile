@@ -1,8 +1,9 @@
-if [ -f ~/.bashrc ]; then . ~/.bashrc; fi 
+if [ -f ~/.bashrc ]; then . ~/.bashrc; fi
 
-# settings 
+# settings
 export PATH="/usr/local/bin:$PATH"
-export LC_ALL=en_US.UTF-8  
+export PATH="$HOME/Library/Python/3.6/bin:$PATH"
+export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export PS1="\W: "
 export PROMPT_COMMAND='echo -ne "\033]0;${PWD/#$HOME/~}\007"'
@@ -99,21 +100,6 @@ if command -v brew >/dev/null 2>&1; then
   }
 fi
 
-# kill processes using fzf
-fkill() {
-    local pid 
-    if [ "$UID" != "0" ]; then
-        pid=$(ps -f -u $UID | sed 1d | fzf -m | awk '{print $2}')
-    else
-        pid=$(ps -ef | sed 1d | fzf -m | awk '{print $2}')
-    fi  
-
-    if [ "x$pid" != "x" ]
-    then
-        echo $pid | xargs kill -${1:-9}
-    fi  
-}
-
 # edit profile
 edit_profile() {
   $EDITOR ~/.bash_profile
@@ -127,4 +113,58 @@ reload_profile() {
 # edit vimrc
 vimrc() {
   $EDITOR ~/.config/nvim/init.vim
+}
+
+# cd to selected directory
+fd() {
+  local dir
+  dir=$(find ${1:-.} -path '*/\.*' -prune \
+                  -o -type d -print 2> /dev/null | fzf +m) &&
+  cd "$dir"
+}
+
+# kill processes
+fkill() {
+    local pid
+    if [ "$UID" != "0" ]; then
+        pid=$(ps -f -u $UID | sed 1d | fzf -m | awk '{print $2}')
+    else
+        pid=$(ps -ef | sed 1d | fzf -m | awk '{print $2}')
+    fi
+
+    if [ "x$pid" != "x" ]
+    then
+        echo $pid | xargs kill -${1:-9}
+    fi
+}
+
+# checkout git branch (including remote branches)
+fbr() {
+  local branches branch
+  branches=$(git branch --all | grep -v HEAD) &&
+  branch=$(echo "$branches" |
+           fzf-tmux -d $(( 2 + $(wc -l <<< "$branches") )) +m) &&
+  git checkout $(echo "$branch" | sed "s/.* //" | sed "s#remotes/[^/]*/##")
+}
+
+# git commit browser
+fshow() {
+  git log --graph --color=always \
+      --format="%C(auto)%h%d %s %C(black)%C(bold)%cr" "$@" |
+  fzf --ansi --no-sort --reverse --tiebreak=index --bind=ctrl-s:toggle-sort \
+      --bind "ctrl-m:execute:
+                (grep -o '[a-f0-9]\{7\}' | head -1 |
+                xargs -I % sh -c 'git show --color=always % | less -R') << 'FZF-EOF'
+                {}
+FZF-EOF"
+}
+
+# brew install plugin
+bip() {
+  local inst=$(brew search | fzf -m)
+
+  if [[ $inst ]]; then
+    for prog in $(echo $inst);
+    do brew install $prog; done;
+  fi
 }
