@@ -22,6 +22,7 @@
 ######################
 *.log
 *.sqlite
+*.sql
 
 # OS generated files #
 ######################
@@ -32,3 +33,5 @@
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+.rgignore

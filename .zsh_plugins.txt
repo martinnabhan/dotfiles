@@ -1,7 +1,0 @@
-g-plane/zsh-yarn-autocompletions
-lukechilds/zsh-better-npm-completion
-zsh-users/zsh-autosuggestions
-zsh-users/zsh-syntax-highlighting
-bhilburn/powerlevel9k
-davidparsson/zsh-pyenv-lazy
-robbyrussell/oh-my-zsh path:plugins/z
