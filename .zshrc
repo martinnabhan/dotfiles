@@ -24,6 +24,7 @@ ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 export PATH=/usr/local/sbin:$PATH
 export PATH=/Users/Shared/DBngin/mysql/8.0.19/bin:$PATH
 export PATH=$HOME/.local/bin:$PATH
+export PATH=$HOME/.local/share/nvim/mason/bin:$PATH
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # variables
