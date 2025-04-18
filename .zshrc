@@ -8,7 +8,7 @@ fpath=(/usr/local/share/zsh-completions $fpath)
 fpath=(~/.zsh/completion $fpath)
 
 # history
-HISTORY_IGNORE="(history|ls|ls -la|ls -latr|mysql -h fr18*)"
+HISTORY_IGNORE="(history|ls*)"
 HISTSIZE=100000
 HISTFILE=~/.zsh_history
 SAVEHIST=100000
@@ -20,33 +20,21 @@ setopt incappendhistory
 # autosuggest
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 
-# path
-export PATH=/usr/local/sbin:$PATH
-export PATH=/Users/Shared/DBngin/mysql/8.0.19/bin:$PATH
-export PATH=$HOME/.local/bin:$PATH
-export PATH=$HOME/.local/share/nvim/mason/bin:$PATH
-export PATH=$HOME/bin:/usr/local/bin:$PATH
+# volta
+export PATH="$HOME/.volta/bin:$PATH"
 
 # variables
-export BAT_STYLE=plain
-export BAT_THEME=TwoDark
 export CLICOLOR=1
 export VISUAL=nvim
 export EDITOR="$VISUAL"
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
-export LSCOLORS=ExFxBxDxCxegedabagacad
-export SSH_KEY_PATH="~/.ssh/rsa_id"
+export PHP_CS_FIXER_IGNORE_ENV=true
+export GEMINI_API_KEY=
 
 # load prompt
 autoload -Uz compinit
-
-# cache prompt
-if [ $(date +'%j') != $(/usr/bin/stat -f '%Sm' -t '%j' ${ZDOTDIR:-$HOME}/.zcompdump) ]; then
-  compinit
-else
-  compinit -C
-fi
+compinit
 
 {
   zcompdump="${ZDOTDIR:-$HOME}/.zcompdump"
@@ -54,10 +42,6 @@ fi
     zcompile "$zcompdump"
   fi
 } &!
-
-# plugins
-source /usr/local/opt/zplug/init.zsh
-zplug load
 
 # bash completions
 autoload -U +X bashcompinit && bashcompinit
@@ -67,9 +51,7 @@ alias vim=nvim
 alias sudo="sudo -i"
 alias -g chekcout=checkout
 alias -g "git push -f"="git push --force-with-lease"
-
-# fzf completion, key bindings
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
 
 # autocomplete ssh
 _complete_ssh_hosts ()
@@ -130,6 +112,40 @@ vimrc() {
 # powerlevel10k
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-# volta
-export VOLTA_HOME="$HOME/.volta"
-export PATH="$VOLTA_HOME/bin:$PATH"
+# zinit
+if [[ ! -f $HOME/.local/share/zinit/zinit.git/zinit.zsh ]]; then
+    print -P "%F{33} %F{220}Installing %F{33}ZDHARMA-CONTINUUM%F{220} Initiative Plugin Manager (%F{33}zdharma-continuum/zinit%F{220})…%f"
+    command mkdir -p "$HOME/.local/share/zinit" && command chmod g-rwX "$HOME/.local/share/zinit"
+    command git clone https://github.com/zdharma-continuum/zinit "$HOME/.local/share/zinit/zinit.git" && \
+        print -P "%F{33} %F{34}Installation successful.%f%b" || \
+        print -P "%F{160} The clone has failed.%f%b"
+fi
+
+source "$HOME/.local/share/zinit/zinit.git/zinit.zsh"
+
+autoload -Uz _zinit
+
+(( ${+_comps} )) && _comps[zinit]=_zinit
+
+zinit load agkozak/zsh-z
+zinit load zsh-users/zsh-autosuggestions
+
+zinit ice wait lucid
+zinit load lukechilds/zsh-better-npm-completion
+
+zinit ice wait lucid
+zinit load Aloxaf/fzf-tab
+
+zinit ice wait lucid
+zinit load zsh-users/zsh-syntax-highlighting
+
+zinit light romkatv/powerlevel10k
+
+# fzf
+source <(fzf --zsh)
+
+# db clients
+export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
+export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
+
+. "$HOME/.local/bin/env"
